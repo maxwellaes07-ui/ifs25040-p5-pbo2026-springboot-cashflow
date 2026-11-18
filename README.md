@@ -66,3 +66,21 @@ config      AppConfig  (composition root: bean JDBC, use case, presenter, FileSt
 - Variabel yang dibaca aplikasi: `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `APP_PORT`/`PORT`, `ROOT_USERNAME`, `ROOT_PASSWORD`, `UPLOAD_DIR`.
 - Bila PostgreSQL tidak bisa dihubungi, aplikasi otomatis memakai database cadangan H2 (`DB_FALLBACK_URL`) sehingga web tetap hidup.
 - Error `getaddrinfo ENOTFOUND delcom-deployment-postgres` pada log deploy berasal dari **server deploy** (host PostgreSQL platform tidak ditemukan sebelum aplikasi dibangun), bukan dari kode proyek. Coba deploy ulang; bila masih gagal, hubungi dosen/asisten pengelola platform.
+
+### Perbaikan audit halaman `/register` (NO_FCP)
+
+- Dokumen HTML awal tidak lagi mengubah stylesheet menjadi `media="print"` atau menyisipkan skrip `MutationObserver`. Resource CSS dan bootstrap dikembalikan ke urutan pemuatan standar Vaadin agar proses render awal lebih stabil untuk browser dan Lighthouse.
+- Metadata `lang="id"` dan judul halaman tetap dilengkapi oleh `LoadingIndicatorInitListener`.
+- Jika audit masih menampilkan `NO_FCP`, pastikan deployment sudah memakai ZIP/build terbaru, tunggu aplikasi selesai cold start, lalu buka langsung `/login` dan `/register` di browser. `NO_FCP` juga dapat terjadi bila browser otomatisasi tidak berada di foreground atau server deployment belum siap; pesan itu sendiri belum membuktikan bahwa route Java tidak terdaftar.
+
+Build ulang dengan Java 25:
+
+```powershell
+.\\mvnw.cmd clean package -Pproduction -DskipTests
+```
+
+Untuk menjalankan tes:
+
+```powershell
+.\\mvnw.cmd test
+```
